@@ -1,3 +1,4 @@
+//go:build windows
 // +build windows
 
 package wca
@@ -10,7 +11,7 @@ import (
 )
 
 func asc2GetSessionIdentifier(asc2 *IAudioSessionControl2, retVal *string) (err error) {
-	var retValPtr uint32
+	var retValPtr *uint16
 	hr, _, _ := syscall.Syscall(
 		asc2.VTable().GetSessionIdentifier,
 		2,
@@ -22,7 +23,7 @@ func asc2GetSessionIdentifier(asc2 *IAudioSessionControl2, retVal *string) (err 
 	}
 	var us []uint16
 	var i uint32
-	var start = unsafe.Pointer(uintptr(retValPtr))
+	var start = unsafe.Pointer(retValPtr)
 	for {
 		u := *(*uint16)(unsafe.Pointer(uintptr(start) + 2*uintptr(i)))
 		if u == 0 {
@@ -32,12 +33,12 @@ func asc2GetSessionIdentifier(asc2 *IAudioSessionControl2, retVal *string) (err 
 		i++
 	}
 	*retVal = syscall.UTF16ToString(us)
-	ole.CoTaskMemFree(uintptr(retValPtr))
+	ole.CoTaskMemFree(uintptr(unsafe.Pointer(retValPtr)))
 	return
 }
 
 func asc2GetSessionInstanceIdentifier(asc2 *IAudioSessionControl2, retVal *string) (err error) {
-	var retValPtr uint32
+	var retValPtr *uint16
 	hr, _, _ := syscall.Syscall(
 		asc2.VTable().GetSessionInstanceIdentifier,
 		2,
@@ -49,7 +50,7 @@ func asc2GetSessionInstanceIdentifier(asc2 *IAudioSessionControl2, retVal *strin
 	}
 	var us []uint16
 	var i uint32
-	var start = unsafe.Pointer(uintptr(retValPtr))
+	var start = unsafe.Pointer(retValPtr)
 	for {
 		u := *(*uint16)(unsafe.Pointer(uintptr(start) + 2*uintptr(i)))
 		if u == 0 {
@@ -59,7 +60,7 @@ func asc2GetSessionInstanceIdentifier(asc2 *IAudioSessionControl2, retVal *strin
 		i++
 	}
 	*retVal = syscall.UTF16ToString(us)
-	ole.CoTaskMemFree(uintptr(retValPtr))
+	ole.CoTaskMemFree(uintptr(unsafe.Pointer(retValPtr)))
 	return
 }
 
