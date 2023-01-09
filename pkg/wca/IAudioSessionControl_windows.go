@@ -1,3 +1,4 @@
+//go:build windows
 // +build windows
 
 package wca
@@ -23,7 +24,7 @@ func ascGetState(asc *IAudioSessionControl, retVal *uint32) (err error) {
 }
 
 func ascGetDisplayName(asc *IAudioSessionControl, retVal *string) (err error) {
-	var retValPtr uint32
+	var retValPtr *uint16
 	hr, _, _ := syscall.Syscall(
 		asc.VTable().GetDisplayName,
 		2,
@@ -35,7 +36,7 @@ func ascGetDisplayName(asc *IAudioSessionControl, retVal *string) (err error) {
 	}
 	var us []uint16
 	var i uint32
-	var start = unsafe.Pointer(uintptr(retValPtr))
+	var start = unsafe.Pointer(retValPtr)
 	for {
 		u := *(*uint16)(unsafe.Pointer(uintptr(start) + 2*uintptr(i)))
 		if u == 0 {
@@ -45,7 +46,7 @@ func ascGetDisplayName(asc *IAudioSessionControl, retVal *string) (err error) {
 		i++
 	}
 	*retVal = syscall.UTF16ToString(us)
-	ole.CoTaskMemFree(uintptr(retValPtr))
+	ole.CoTaskMemFree(uintptr(unsafe.Pointer(retValPtr)))
 	return
 }
 
@@ -63,7 +64,7 @@ func ascSetDisplayName(asc *IAudioSessionControl, value *string, eventContext *o
 }
 
 func ascGetIconPath(asc *IAudioSessionControl, retVal *string) (err error) {
-	var retValPtr uint32
+	var retValPtr *uint16
 	hr, _, _ := syscall.Syscall(
 		asc.VTable().GetIconPath,
 		2,
@@ -75,7 +76,7 @@ func ascGetIconPath(asc *IAudioSessionControl, retVal *string) (err error) {
 	}
 	var us []uint16
 	var i uint32
-	var start = unsafe.Pointer(uintptr(retValPtr))
+	var start = unsafe.Pointer(retValPtr)
 	for {
 		u := *(*uint16)(unsafe.Pointer(uintptr(start) + 2*uintptr(i)))
 		if u == 0 {
@@ -85,7 +86,7 @@ func ascGetIconPath(asc *IAudioSessionControl, retVal *string) (err error) {
 		i++
 	}
 	*retVal = syscall.UTF16ToString(us)
-	ole.CoTaskMemFree(uintptr(retValPtr))
+	ole.CoTaskMemFree(uintptr(unsafe.Pointer(retValPtr)))
 	return
 }
 

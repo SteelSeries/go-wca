@@ -1,3 +1,4 @@
+//go:build windows
 // +build windows
 
 package wca
@@ -41,7 +42,7 @@ func mmdOpenPropertyStore(mmd *IMMDevice, storageMode uint32, ps **IPropertyStor
 }
 
 func mmdGetId(mmd *IMMDevice, strId *string) (err error) {
-	var strIdPtr uint32
+	var strIdPtr *uint16
 	hr, _, _ := syscall.Syscall(
 		mmd.VTable().GetId,
 		2,
@@ -55,7 +56,7 @@ func mmdGetId(mmd *IMMDevice, strId *string) (err error) {
 	// https://msdn.microsoft.com/en-us/library/windows/desktop/dd370837(v=vs.85).aspx
 	var us []uint16
 	var i uint32
-	var start = unsafe.Pointer(uintptr(strIdPtr))
+	var start = unsafe.Pointer(strIdPtr)
 	for {
 		u := *(*uint16)(unsafe.Pointer(uintptr(start) + 2*uintptr(i)))
 		if u == 0 {
@@ -65,7 +66,7 @@ func mmdGetId(mmd *IMMDevice, strId *string) (err error) {
 		i++
 	}
 	*strId = syscall.UTF16ToString(us)
-	ole.CoTaskMemFree(uintptr(strIdPtr))
+	ole.CoTaskMemFree(uintptr(unsafe.Pointer(strIdPtr)))
 	return
 }
 
