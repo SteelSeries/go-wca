@@ -1,3 +1,4 @@
+//go:build windows
 // +build windows
 
 package wca
@@ -9,13 +10,13 @@ import (
 	"github.com/go-ole/go-ole"
 )
 
-func mmncQueryInterface(this uintptr, riid *ole.GUID, ppInterface *uintptr) int64 {
+func mmncQueryInterface(mmnc *IMMNotificationClient, riid *ole.GUID, ppInterface *uintptr) int64 {
 	*ppInterface = 0
 
 	if ole.IsEqualGUID(riid, ole.IID_IUnknown) ||
 		ole.IsEqualGUID(riid, IID_IMMNotificationClient) {
-		mmncAddRef(this)
-		*ppInterface = this
+		mmncAddRef(mmnc)
+		*ppInterface = uintptr(unsafe.Pointer(mmnc))
 
 		return ole.S_OK
 	}
@@ -23,25 +24,19 @@ func mmncQueryInterface(this uintptr, riid *ole.GUID, ppInterface *uintptr) int6
 	return ole.E_NOINTERFACE
 }
 
-func mmncAddRef(this uintptr) int64 {
-	mmnc := (*IMMNotificationClient)(unsafe.Pointer(this))
-
+func mmncAddRef(mmnc *IMMNotificationClient) int64 {
 	mmnc.refCount += 1
 
 	return int64(mmnc.refCount)
 }
 
-func mmncRelease(this uintptr) int64 {
-	mmnc := (*IMMNotificationClient)(unsafe.Pointer(this))
-
+func mmncRelease(mmnc *IMMNotificationClient) int64 {
 	mmnc.refCount -= 1
 
 	return int64(mmnc.refCount)
 }
 
-func mmncOnDefaultDeviceChanged(this uintptr, flow, role uint64, pwstrDeviceId uintptr) int64 {
-	mmnc := (*IMMNotificationClient)(unsafe.Pointer(this))
-
+func mmncOnDefaultDeviceChanged(mmnc *IMMNotificationClient, flow, role uint64, pwstrDeviceId uintptr) int64 {
 	if mmnc.callback.OnDefaultDeviceChanged == nil {
 		return ole.S_OK
 	}
@@ -58,9 +53,7 @@ func mmncOnDefaultDeviceChanged(this uintptr, flow, role uint64, pwstrDeviceId u
 	return ole.S_OK
 }
 
-func mmncOnDeviceAdded(this uintptr, pwstrDeviceId uintptr) int64 {
-	mmnc := (*IMMNotificationClient)(unsafe.Pointer(this))
-
+func mmncOnDeviceAdded(mmnc *IMMNotificationClient, pwstrDeviceId uintptr) int64 {
 	if mmnc.callback.OnDeviceAdded == nil {
 		return ole.S_OK
 	}
@@ -76,9 +69,7 @@ func mmncOnDeviceAdded(this uintptr, pwstrDeviceId uintptr) int64 {
 	return ole.S_OK
 }
 
-func mmncOnDeviceRemoved(this uintptr, pwstrDeviceId uintptr) int64 {
-	mmnc := (*IMMNotificationClient)(unsafe.Pointer(this))
-
+func mmncOnDeviceRemoved(mmnc *IMMNotificationClient, pwstrDeviceId uintptr) int64 {
 	if mmnc.callback.OnDeviceRemoved == nil {
 		return ole.S_OK
 	}
@@ -95,9 +86,7 @@ func mmncOnDeviceRemoved(this uintptr, pwstrDeviceId uintptr) int64 {
 	return ole.S_OK
 }
 
-func mmncOnDeviceStateChanged(this uintptr, pwstrDeviceId uintptr, dwNewState uintptr) int64 {
-	mmnc := (*IMMNotificationClient)(unsafe.Pointer(this))
-
+func mmncOnDeviceStateChanged(mmnc *IMMNotificationClient, pwstrDeviceId uintptr, dwNewState uintptr) int64 {
 	if mmnc.callback.OnDeviceStateChanged == nil {
 		return ole.S_OK
 	}
@@ -114,9 +103,7 @@ func mmncOnDeviceStateChanged(this uintptr, pwstrDeviceId uintptr, dwNewState ui
 	return ole.S_OK
 }
 
-func mmncOnPropertyValueChanged(this uintptr, pwstrDeviceId uintptr, key uintptr) int64 {
-	mmnc := (*IMMNotificationClient)(unsafe.Pointer(this))
-
+func mmncOnPropertyValueChanged(mmnc *IMMNotificationClient, pwstrDeviceId uintptr, key uintptr) int64 {
 	if mmnc.callback.OnPropertyValueChanged == nil {
 		return ole.S_OK
 	}
